@@ -47,6 +47,7 @@ namespace vx
 			static vx::bitset<32> s_currentCapabilities;
 			static u32 s_bindBuffer[s_bufferTypeCount];
 			static vx::float4 s_clearColor;
+			static u8 s_colorMask;
 
 			StateManager();
 
@@ -63,6 +64,8 @@ namespace vx
 			static void bindBuffer(BufferType target, const Buffer &buffer);
 			static void bindPipeline(u32 pipeline);
 			static void bindPipeline(const ProgramPipeline &pipe);
+			static void setColorMask(bool r, bool g, bool b, bool a);
+			static void setDepthMask(bool d);
 		};
 	}
 }

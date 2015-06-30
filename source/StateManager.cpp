@@ -33,13 +33,14 @@ namespace vx
 {
 	namespace gl
 	{
-		u32 StateManager::s_currentFrameBuffer{0};
-		u32 StateManager::s_currentPipeline{0};
-		u32 StateManager::s_currentVao{0};
+		u32 StateManager::s_currentFrameBuffer{ 0 };
+		u32 StateManager::s_currentPipeline{ 0 };
+		u32 StateManager::s_currentVao{ 0 };
 		vx::ushort4 StateManager::s_viewPort{ 0, 0, 0, 0 };
 		vx::bitset<32> StateManager::s_currentCapabilities{};
 		u32 StateManager::s_bindBuffer[s_bufferTypeCount]{};
 		vx::float4 StateManager::s_clearColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+		u8 StateManager::s_colorMask{ 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 };
 
 		StateManager::StateManager()
 		{
@@ -146,6 +147,39 @@ namespace vx
 		void StateManager::bindPipeline(const ProgramPipeline &pipe)
 		{
 			bindPipeline(pipe.getId());
+		}
+
+		void StateManager::setColorMask(bool r, bool g, bool b, bool a)
+		{
+			const auto mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
+
+			auto newMask = (r << 0) | (g << 1) | (b << 2) | (a << 3);
+
+			auto oldMask = s_colorMask & mask;
+
+			if (oldMask != newMask)
+			{
+				s_colorMask = s_colorMask ^ oldMask;
+				s_colorMask |= newMask;
+
+				glColorMask((u8)r, (u8)g, (u8)b, (u8)a);
+			}
+		}
+
+		void StateManager::setDepthMask(bool d)
+		{
+			const auto mask = 1 << 4;
+			auto newMask = d << 4;
+
+			auto oldMask = s_colorMask & mask;
+
+			if (oldMask != newMask)
+			{
+				s_colorMask = s_colorMask ^ oldMask;
+				s_colorMask |= newMask;
+
+				glDepthMask((u8)d);
+			}
 		}
 	}
 }

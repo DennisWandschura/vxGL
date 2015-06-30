@@ -318,7 +318,7 @@ namespace ShaderManagerCpp
 
 		bool found = hasDefine(sid, localDefines, globalDefines);
 
-		if (!found)
+		if (found)
 		{
 			auto endifEnd = getElseOrEndif(valueEnd);
 			auto endifEndOther = getElseOrEndif(endifEnd + 1);
@@ -491,7 +491,9 @@ namespace ShaderManagerCpp
 		}
 	}
 
-	bool loadShaderProgram(const char* programFile, const std::string &includeDir, const vx::sorted_vector<vx::StringID, vx::gl::ShaderParameter> &params,
+	bool loadShaderProgram(const char* programFile,
+		const char* fileName,
+		const std::string &includeDir, const vx::sorted_vector<vx::StringID, vx::gl::ShaderParameter> &params,
 		const vx::sorted_vector<vx::StringID, s32> &globalDefines,
 		vx::gl::ShaderProgram* program, vx::sorted_vector<vx::StringID, std::string>* includeFiles, vx::StackAllocator* scratchAllocator)
 	{
@@ -522,7 +524,8 @@ namespace ShaderManagerCpp
 		{
 			printf("Error '%s'\n%s\n", programFile, log.get());
 
-			std::string errorFile("error.txt");
+			std::string errorFile("error_");
+			errorFile.append(fileName);
 			std::ofstream outFile(errorFile);
 			outFile << ptr;
 			//printf("%s\n", ptr);
@@ -550,7 +553,7 @@ namespace vx
 		ShaderManager::ShaderManager()
 			:m_programPipelines(),
 			m_shaderPrograms(),
-			m_includeFiles()
+			m_textPreprocessor()
 		{
 
 		}
@@ -614,7 +617,6 @@ namespace vx
 		{
 			m_programPipelines.clear();
 			m_shaderPrograms.clear();
-			m_includeFiles.clear();
 		}
 
 		bool ShaderManager::loadProgram(const FileHandle &programHandle, vx::gl::ShaderProgramType type, const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator)
@@ -625,14 +627,35 @@ namespace vx
 			auto it = m_shaderPrograms.find(sid);
 			if (it == m_shaderPrograms.end())
 			{
+				auto programData = m_textPreprocessor.preprocessFile(programFile.c_str());
 				vx::gl::ShaderProgram program(type);
-				if (!ShaderManagerCpp::loadShaderProgram(programFile.c_str(), includeDir, m_parameters, m_defines, &program, &m_includeFiles, scratchAllocator))
+
+				const char* ptr = programData.c_str();
+
+				s32 logSize = 0;
+				auto log = program.create(&ptr, logSize);
+				if (log)
+				{
+					printf("Error '%s'\n%s\n", programFile, log.get());
+
+					std::string errorFile("error_");
+					errorFile.append(programHandle.m_string);
+					std::ofstream outFile(errorFile);
+					outFile << ptr;
+
+					return false;
+				}
+
+				m_shaderPrograms.insert(std::move(sid), std::move(program));
+
+				/*vx::gl::ShaderProgram program(type);
+				if (!ShaderManagerCpp::loadShaderProgram(programFile.c_str(), programHandle.m_string, includeDir, m_parameters, m_defines, &program, &m_includeFiles, scratchAllocator))
 				{
 					printf("Error ShaderManager::loadProgram\n");
 					return false;
 				}
 
-				m_shaderPrograms.insert(std::move(sid), std::move(program));
+				m_shaderPrograms.insert(std::move(sid), std::move(program));*/
 			}
 
 			return true;
@@ -745,60 +768,34 @@ namespace vx
 			return loadPipeline(fileHandle, id, pipelineDir, programDir, includeDir, scratchAllocator);
 		}
 
-		void ShaderManager::addParameter(const char* id, const ShaderParameter &param)
-		{
-			m_parameters.insert(vx::make_sid(id), param);
-		}
-
 		void ShaderManager::addParameter(const char* id, s32 value)
 		{
-			addParameter(id, ShaderParameter(value));
+			m_textPreprocessor.setCustomValue(id, value);
 		}
 
 		void ShaderManager::addParameter(const char* id, u32 value)
 		{
-			addParameter(id, ShaderParameter(value));
+			m_textPreprocessor.setCustomValue(id, value);
 		}
 
 		void ShaderManager::addParameter(const char* id, f32 value)
 		{
-			addParameter(id, ShaderParameter(value));
+			m_textPreprocessor.setCustomValue(id, value);
 		}
 
 		void ShaderManager::setDefine(const char* define)
 		{
-			auto sid = vx::make_sid(define);
-			m_defines.insert(sid, 1);
+			m_textPreprocessor.setDefine(define);
 		}
 
 		void ShaderManager::removeDefine(const char* define)
 		{
-			auto sid = vx::make_sid(define);
-			auto it = m_defines.find(sid);
-			if (it != m_defines.end())
-				m_defines.erase(it);
+			m_textPreprocessor.removeDefine(define);
 		}
 
 		void ShaderManager::addIncludeFile(const char* file, const char* key)
 		{
-			std::ifstream inFile(file);
-			if (!inFile.is_open())
-				return;
-
-			inFile.seekg(0, std::ifstream::end);
-			auto size = inFile.tellg();
-			inFile.seekg(0, std::ifstream::beg);
-
-			auto buffer = std::make_unique<char[]>(size);
-			inFile.read(buffer.get(), size);
-
-			std::string data;
-			data.reserve(size);
-			data.assign(buffer.get(), buffer.get() + size);
-
-			auto sid = vx::make_sid(key);
-
-			m_includeFiles.insert(std::move(sid), std::move(data));
+			m_textPreprocessor.loadIncludeFile(file, key);
 		}
 
 		const vx::gl::ShaderProgram* ShaderManager::getProgram(const vx::StringID &sid) const

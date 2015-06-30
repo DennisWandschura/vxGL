@@ -27,6 +27,7 @@ SOFTWARE.
 #include <vxLib/Container/sorted_vector.h>
 #include <vxLib/StringID.h>
 #include <string>
+#include <vxLib/TextPreprocessor.h>
 
 namespace vx
 {
@@ -45,9 +46,7 @@ namespace vx
 
 			vx::sorted_vector<vx::StringID, ProgramPipeline> m_programPipelines;
 			vx::sorted_vector<vx::StringID, ShaderProgram> m_shaderPrograms;
-			vx::sorted_vector<vx::StringID, std::string> m_includeFiles;
-			vx::sorted_vector<vx::StringID, ShaderParameter> m_parameters;
-			vx::sorted_vector<vx::StringID, s32> m_defines;
+			vx::TextPreprocessor m_textPreprocessor;
 			std::string m_dataDir;
 
 			bool loadProgram(const FileHandle &programHandle, vx::gl::ShaderProgramType type, const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator);
@@ -58,8 +57,6 @@ namespace vx
 
 			bool loadPipelines(vx::StackAllocator* scratchAllocator);
 			bool loadPipeline(const FileHandle &fileHandle, const char *id, const std::string &pipelineDir, const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator);
-
-			void addParameter(const char* id, const ShaderParameter &param);
 
 		public:
 			ShaderManager();
