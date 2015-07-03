@@ -299,10 +299,10 @@ namespace vx
 			printf("Renderer: %s\n", renderer);
 			printf("OpenGL version supported %s\n", version);
 
-			m_orthoMatrix = MatrixOrthographicRH(static_cast<f32>(params.resolution.x), static_cast<f32>(params.resolution.y), params.nearZ, params.farZ);
+			//m_orthoMatrix = MatrixOrthographicRH(static_cast<f32>(params.resolution.x), static_cast<f32>(params.resolution.y), params.nearZ, params.farZ);
 
-			auto screenAspect = (f32)params.resolution.x / (f32)params.resolution.y;
-			m_projectionMatrix = MatrixPerspectiveFovRH(params.fovRad, screenAspect, params.nearZ, params.farZ);
+			//auto screenAspect = (f32)params.resolution.x / (f32)params.resolution.y;
+			//m_projectionMatrix = MatrixPerspectiveFovRH(params.fovRad, screenAspect, params.nearZ, params.farZ);
 
 			if (params.bVsync)
 				result = wglSwapIntervalEXT(1);

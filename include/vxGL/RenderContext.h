@@ -37,9 +37,6 @@ namespace vx
 		{
 			HWND hwnd;
 			vx::uint2 resolution;
-			f32 fovRad; 
-			f32 nearZ;
-			f32 farZ;
 			u8 majVersion;
 			u8 minVersion;
 			bool bVsync;
@@ -64,8 +61,6 @@ namespace vx
 
 		class RenderContext
 		{
-			mat4 m_orthoMatrix;
-			mat4 m_projectionMatrix;
 			HDC m_pDeviceContext;
 			HGLRC m_pRenderingContext;
 			std::unique_ptr<s32[]> m_pContextAttribs;
@@ -89,16 +84,6 @@ namespace vx
 			void swapBuffers();
 
 			void makeCurrent(bool b);
-
-			const mat4& VX_CALLCONV getProjectionMatrix() const
-			{
-				return m_projectionMatrix;
-			}
-
-			const mat4& VX_CALLCONV getOrthoMatrix() const
-			{
-				return m_orthoMatrix;
-			}
 
 			const HDC getDeviceContext() const
 			{
