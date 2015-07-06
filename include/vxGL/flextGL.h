@@ -1,4 +1,3 @@
-#pragma once
 /* WARNING: This file was automatically generated */
 /* Do not edit. */
 
@@ -1663,6 +1662,10 @@ typedef void (APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum 
 #define GL_SUBPIXEL_PRECISION_BIAS_X_BITS_NV 0x9347
 #define GL_SUBPIXEL_PRECISION_BIAS_Y_BITS_NV 0x9348
 #define GL_MAX_SUBPIXEL_PRECISION_BIAS_BITS_NV 0x9349
+
+/* GL_NV_fill_rectangle */
+
+#define GL_FILL_RECTANGLE_NV 0x933C
 
 /* --------------------------- FUNCTION PROTOTYPES --------------------------- */
 
@@ -4676,6 +4679,12 @@ GLAPI PFNGLSUBPIXELPRECISIONBIASNV_PROC *glpfSubpixelPrecisionBiasNV;
 
 
 
+/* GL_NV_fill_rectangle */
+
+
+
+
+
 /* --------------------------- CATEGORY DEFINES ------------------------------ */
 
 #define GL_VERSION_1_0
@@ -4714,6 +4723,7 @@ GLAPI PFNGLSUBPIXELPRECISIONBIASNV_PROC *glpfSubpixelPrecisionBiasNV;
 #define GL_NV_shader_buffer_load
 #define GL_NV_conservative_raster
 #define GL_NV_shader_atomic_fp16_vector
+#define GL_NV_fill_rectangle
 
 /* ---------------------- Flags for optional extensions ---------------------- */
 
@@ -4735,6 +4745,7 @@ extern int FLEXT_NV_vertex_buffer_unified_memory;
 extern int FLEXT_NV_shader_buffer_load;
 extern int FLEXT_NV_conservative_raster;
 extern int FLEXT_NV_shader_atomic_fp16_vector;
+extern int FLEXT_NV_fill_rectangle;
 
 int flextInit(void);
 

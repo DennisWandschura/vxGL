@@ -80,7 +80,8 @@ namespace vx
 			Scissor_Test,
 			Stencil_Test,
 			Texture_Cube_Map_Seamless,
-			Program_Point_Size
+			Program_Point_Size,
+			Conservative_Rasterization
 		};
 
 		enum class ShaderProgramType : u8

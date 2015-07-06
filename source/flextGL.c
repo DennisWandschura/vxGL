@@ -1159,6 +1159,10 @@ void flextLoadOpenGLFunctions(void)
 
 
 
+    /* GL_NV_fill_rectangle */
+
+
+
 }
 
 /* ----------------------- Extension flag definitions ---------------------- */
@@ -1180,6 +1184,7 @@ int FLEXT_NV_vertex_buffer_unified_memory = GL_FALSE;
 int FLEXT_NV_shader_buffer_load = GL_FALSE;
 int FLEXT_NV_conservative_raster = GL_FALSE;
 int FLEXT_NV_shader_atomic_fp16_vector = GL_FALSE;
+int FLEXT_NV_fill_rectangle = GL_FALSE;
 
 /* ---------------------- Function pointer definitions --------------------- */
 
@@ -2228,6 +2233,9 @@ static void add_extension(const char* extension)
     if (strcmp("GL_NV_shader_atomic_fp16_vector", extension) == 0) {
         FLEXT_NV_shader_atomic_fp16_vector = GL_TRUE;
     }
+    if (strcmp("GL_NV_fill_rectangle", extension) == 0) {
+        FLEXT_NV_fill_rectangle = GL_TRUE;
+    }
 }
 
 
@@ -2253,9 +2261,9 @@ static GLPROC get_proc(const char *proc)
 {
     GLPROC res;
 
-    res = wglGetProcAddress(proc);
+    res = (GLPROC)wglGetProcAddress(proc);
     if (!res)
-        res = GetProcAddress(libgl, proc);
+        res = (GLPROC)GetProcAddress(libgl, proc);
     return res;
 }
 #elif defined(__APPLE__) || defined(__APPLE_CC__)
