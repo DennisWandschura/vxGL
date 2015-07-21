@@ -149,7 +149,7 @@ namespace vx
 			bindPipeline(pipe.getId());
 		}
 
-		void StateManager::setColorMask(bool r, bool g, bool b, bool a)
+		void StateManager::setColorMask(u8 r, u8 g, u8 b, u8 a)
 		{
 			const auto mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
 
@@ -166,7 +166,30 @@ namespace vx
 			}
 		}
 
-		void StateManager::setDepthMask(bool d)
+		void StateManager::setColorMask(u8 newMask)
+		{
+			const auto mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
+
+			//auto newMask = (r << 0) | (g << 1) | (b << 2) | (a << 3);
+			newMask = newMask & mask;
+
+			auto oldMask = s_colorMask & mask;
+
+			if (oldMask != newMask)
+			{
+				s_colorMask = s_colorMask ^ oldMask;
+				s_colorMask |= newMask;
+
+				auto r = newMask & 0x1;
+				auto g = (newMask >> 1) & 0x1;
+				auto b = (newMask >> 2) & 0x1;
+				auto a = (newMask >> 3) & 0x1;
+
+				glColorMask(r, g, b, a);
+			}
+		}
+
+		void StateManager::setDepthMask(u8 d)
 		{
 			const auto mask = 1 << 4;
 			auto newMask = d << 4;

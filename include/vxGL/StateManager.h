@@ -64,8 +64,9 @@ namespace vx
 			static void bindBuffer(BufferType target, const Buffer &buffer);
 			static void bindPipeline(u32 pipeline);
 			static void bindPipeline(const ProgramPipeline &pipe);
-			static void setColorMask(bool r, bool g, bool b, bool a);
-			static void setDepthMask(bool d);
+			static void setColorMask(u8 r, u8 g, u8 b, u8 a);
+			static void setColorMask(u8 mask);
+			static void setDepthMask(u8 d);
 		};
 	}
 }
