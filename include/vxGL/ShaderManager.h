@@ -49,23 +49,22 @@ namespace vx
 			vx::TextPreprocessor m_textPreprocessor;
 			std::string m_dataDir;
 
-			bool loadProgram(const FileHandle &programHandle, vx::gl::ShaderProgramType type, const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator);
+			bool loadProgram(const FileHandle &programHandle, vx::gl::ShaderProgramType type, const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator, std::string* error);
 			bool useProgram(vx::gl::ProgramPipeline &pipe, const FileHandle &handle);
-			bool loadUseProgram(const LoadUseProgramDescription &desc, vx::StackAllocator* scratchAllocator);
+			bool loadUseProgram(const LoadUseProgramDescription &desc, vx::StackAllocator* scratchAllocator, std::string* error);
 
 			const vx::gl::ShaderProgram* getProgram(const vx::StringID &sid) const;
 
-			bool loadPipelines(vx::StackAllocator* scratchAllocator);
-			bool loadPipeline(const FileHandle &fileHandle, const char *id, const std::string &pipelineDir, const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator);
+			bool loadPipeline(const FileHandle &fileHandle, const char *id, const std::string &pipelineDir, const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator, std::string* error);
 
 		public:
 			ShaderManager();
 			~ShaderManager();
 
-			bool initialize(const std::string &dataDir, vx::StackAllocator* scratchAllocator, bool loadAllPipelinesFromDir);
+			void initialize(const std::string &dataDir);
 			void clear();
 
-			bool loadPipeline(const FileHandle &filehandle, const char *id, vx::StackAllocator* scratchAllocator);
+			bool loadPipeline(const FileHandle &filehandle, const char *id, vx::StackAllocator* scratchAllocator, std::string* error);
 
 			void addParameter(const char* id, s32 value);
 			void addParameter(const char* id, u32 value);

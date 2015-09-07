@@ -198,13 +198,13 @@ namespace vx
 
 		bool RenderContext::initializeOpenGl(const OpenGLDescription &params, const int *pContextAttribs)
 		{
-			puts("Initializing OpgenGL");
+			//puts("Initializing OpgenGL");
 
 			// Get the device context for this window.
 			m_pDeviceContext = GetDC(params.hwnd);
 			if (!m_pDeviceContext)
 			{
-				puts("Error");
+				//puts("Error");
 				return false;
 			}
 
@@ -294,10 +294,10 @@ namespace vx
 			setDefaultStates(params);
 
 			// get version info
-			auto renderer = glGetString(GL_RENDERER); // get renderer string
-			auto version = glGetString(GL_VERSION); // version as a string
-			printf("Renderer: %s\n", renderer);
-			printf("OpenGL version supported %s\n", version);
+			//auto renderer = glGetString(GL_RENDERER); // get renderer string
+			//auto version = glGetString(GL_VERSION); // version as a string
+			//printf("Renderer: %s\n", renderer);
+			//printf("OpenGL version supported %s\n", version);
 
 			//m_orthoMatrix = MatrixOrthographicRH(static_cast<f32>(params.resolution.x), static_cast<f32>(params.resolution.y), params.nearZ, params.farZ);
 
@@ -316,7 +316,7 @@ namespace vx
 				return false;
 			}
 
-			puts("Initialized OpgenGL");
+			//puts("Initialized OpgenGL");
 
 			return true;
 		}
@@ -374,6 +374,18 @@ namespace vx
 			{
 				wglMakeCurrent(m_pDeviceContext, nullptr);
 			}
+		}
+
+		const char* RenderContext::getRenderer() const
+		{
+			auto renderer = glGetString(GL_RENDERER); // get renderer string
+			return (char*)renderer;
+		}
+
+		const char* RenderContext::getVersion() const
+		{
+			auto version = glGetString(GL_VERSION); // version as a string
+			return (char*)version;
 		}
 	}
 }

@@ -96,6 +96,9 @@ namespace vx
 			}
 
 			const s32* getContextAttributes() const { return m_pContextAttribs.get(); }
+
+			const char* getRenderer() const;
+			const char* getVersion() const;
 		};
 	}
 }

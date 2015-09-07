@@ -25,7 +25,6 @@ SOFTWARE.
 #include <vxGL/ShaderManager.h>
 #include <vxGL/ProgramPipeline.h>
 #include <vxGL/ShaderProgram.h>
-#include <fstream>
 #include <Shlwapi.h>
 #include <vxGL/gl.h>
 #include <vxLib/memory.h>
@@ -33,6 +32,7 @@ SOFTWARE.
 #include <vxLib/Variant.h>
 #include <vxLib/ScopeGuard.h>
 #include <vxLib/Allocator/StackAllocator.h>
+#include <fstream>
 
 namespace vx
 {
@@ -135,7 +135,7 @@ namespace ShaderManagerCpp
 		return true;
 	}
 
-	bool loadFile(const char* str, char** buffer, u32 &size, vx::StackAllocator* scratchAllocator)
+	/*bool loadFile(const char* str, char** buffer, u32 &size, vx::StackAllocator* scratchAllocator)
 	{
 		std::ifstream inFile(str);
 
@@ -155,7 +155,7 @@ namespace ShaderManagerCpp
 		inFile.read(*buffer, size);
 
 		return true;
-	}
+	}*/
 
 	const char* getInclude(const char* text)
 	{
@@ -383,7 +383,7 @@ namespace ShaderManagerCpp
 		}
 	}
 
-	void processText(char** text, int bufferSize, const std::string &includeDir, 
+	/*void processText(char** text, int bufferSize, const std::string &includeDir, 
 		const vx::sorted_vector<vx::StringID, s32> &globalDefines, vx::sorted_vector<vx::StringID, s32>* localDefines,
 		vx::sorted_vector<vx::StringID, std::string>* includeFiles, vx::sorted_vector<vx::StringID, s32>* includedFiles, vx::StackAllocator* scratchAllocator)
 	{
@@ -491,7 +491,7 @@ namespace ShaderManagerCpp
 		}
 	}
 
-	bool loadShaderProgram(const char* programFile,
+	/*bool loadShaderProgram(const char* programFile,
 		const char* fileName,
 		const std::string &includeDir, const vx::sorted_vector<vx::StringID, vx::gl::ShaderParameter> &params,
 		const vx::sorted_vector<vx::StringID, s32> &globalDefines,
@@ -534,7 +534,7 @@ namespace ShaderManagerCpp
 		}
 
 		return true;
-	}
+	}*/
 }
 
 namespace vx
@@ -562,55 +562,9 @@ namespace vx
 		{
 		}
 
-		bool ShaderManager::loadPipelines(vx::StackAllocator* scratchAllocator)
-		{
-			auto pipelineDir = m_dataDir + "shaders/";
-			auto searchMask = m_dataDir + "shaders/*.pipe";
-
-			HANDLE fileHandle = nullptr;
-			WIN32_FIND_DATAA fileData;
-			if ((fileHandle = FindFirstFileA(searchMask.c_str(), &fileData)) == INVALID_HANDLE_VALUE)
-			{
-				//	printf("error\n");
-			}
-
-			const std::string programDir(m_dataDir + "shaders/programs/");
-			const std::string includeDir = m_dataDir + "shaders/include/";
-
-			bool result = fileHandle != INVALID_HANDLE_VALUE;
-			while (result)
-			{
-				const bool is_directory = (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-
-				if (!is_directory)
-				{
-					auto pipelineHandle = vx::FileHandle(fileData.cFileName);
-					if (!loadPipeline(pipelineHandle, pipelineHandle.m_string, pipelineDir, programDir, includeDir, scratchAllocator))
-					{
-						return false;
-					}
-				}
-
-				result = FindNextFileA(fileHandle, &fileData);
-			}
-
-			return true;
-		}
-
-		bool ShaderManager::initialize(const std::string &dataDir, vx::StackAllocator* scratchAllocator, bool loadAllPipelinesFromDir)
+		void ShaderManager::initialize(const std::string &dataDir)
 		{
 			m_dataDir = dataDir;
-
-			if (loadAllPipelinesFromDir)
-			{
-				if (!loadPipelines(scratchAllocator))
-				{
-					printf("error loading shader pipelines\n");
-					return false;
-				}
-			}
-
-			return true;
 		}
 
 		void ShaderManager::clear()
@@ -619,7 +573,7 @@ namespace vx
 			m_shaderPrograms.clear();
 		}
 
-		bool ShaderManager::loadProgram(const FileHandle &programHandle, vx::gl::ShaderProgramType type, const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator)
+		bool ShaderManager::loadProgram(const FileHandle &programHandle, vx::gl::ShaderProgramType type, const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator, std::string* error)
 		{
 			auto programFile = programDir + programHandle.m_string;
 
@@ -636,7 +590,12 @@ namespace vx
 				auto log = program.create(&ptr, logSize);
 				if (log)
 				{
-					printf("Error '%s'\n%s\n", programFile, log.get());
+					//printf("Error '%s'\n%s\n", programFile, log.get());
+					error->append("shader error: ");
+					error->append(programFile);
+					error->push_back('\n');
+
+					error->append(log.get());
 
 					std::string errorFile("error_");
 					errorFile.append(programHandle.m_string);
@@ -674,7 +633,7 @@ namespace vx
 			return true;
 		}
 
-		bool ShaderManager::loadUseProgram(const LoadUseProgramDescription &desc, vx::StackAllocator* scratchAllocator)
+		bool ShaderManager::loadUseProgram(const LoadUseProgramDescription &desc, vx::StackAllocator* scratchAllocator, std::string* error)
 		{
 			// check for not used shader stage
 			if (strcmp(desc.id, "''") == 0)
@@ -683,7 +642,7 @@ namespace vx
 			}
 
 			auto fileHandle = FileHandle(desc.id);
-			if (!loadProgram(fileHandle, desc.type, *desc.programDir, *desc.includeDir, scratchAllocator))
+			if (!loadProgram(fileHandle, desc.type, *desc.programDir, *desc.includeDir, scratchAllocator, error))
 				return false;
 			if (!useProgram(*desc.pipe, fileHandle))
 				return false;
@@ -691,7 +650,8 @@ namespace vx
 			return true;
 		}
 
-		bool ShaderManager::loadPipeline(const FileHandle &fileHandle, const char *id, const std::string &pipelineDir, const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator)
+		bool ShaderManager::loadPipeline(const FileHandle &fileHandle, const char *id, const std::string &pipelineDir, 
+			const std::string &programDir, const std::string &includeDir, vx::StackAllocator* scratchAllocator, std::string* error)
 		{
 			auto sid = vx::make_sid(id);
 			auto it = m_programPipelines.find(sid);
@@ -735,22 +695,22 @@ namespace vx
 
 			desc.id = shaders[0].c_str();
 			desc.type = vx::gl::ShaderProgramType::VERTEX;
-			if (!loadUseProgram(desc, scratchAllocator))
+			if (!loadUseProgram(desc, scratchAllocator, error))
 				return false;
 
 			desc.id = shaders[1].c_str();
 			desc.type = vx::gl::ShaderProgramType::GEOMETRY;
-			if (!loadUseProgram(desc, scratchAllocator))
+			if (!loadUseProgram(desc, scratchAllocator, error))
 				return false;
 
 			desc.id = shaders[2].c_str();
 			desc.type = vx::gl::ShaderProgramType::FRAGMENT;
-			if (!loadUseProgram(desc, scratchAllocator))
+			if (!loadUseProgram(desc, scratchAllocator, error))
 				return false;
 
 			desc.id = shaders[3].c_str();
 			desc.type = vx::gl::ShaderProgramType::COMPUTE;
-			if (!loadUseProgram(desc, scratchAllocator))
+			if (!loadUseProgram(desc, scratchAllocator, error))
 				return false;
 
 		//	printf("Added pipeline '%s'\n", id);
@@ -759,13 +719,13 @@ namespace vx
 			return true;
 		}
 
-		bool ShaderManager::loadPipeline(const FileHandle &fileHandle, const char *id, vx::StackAllocator* scratchAllocator)
+		bool ShaderManager::loadPipeline(const FileHandle &fileHandle, const char *id, vx::StackAllocator* scratchAllocator, std::string* error)
 		{
 			auto pipelineDir = m_dataDir + "shaders/";
 			const std::string programDir(m_dataDir + "shaders/programs/");
 			const std::string includeDir = m_dataDir + "shaders/include/";
 
-			return loadPipeline(fileHandle, id, pipelineDir, programDir, includeDir, scratchAllocator);
+			return loadPipeline(fileHandle, id, pipelineDir, programDir, includeDir, scratchAllocator, error);
 		}
 
 		void ShaderManager::addParameter(const char* id, s32 value)
